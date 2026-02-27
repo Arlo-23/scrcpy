@@ -25,8 +25,9 @@ A beautiful, premium GUI wrapper for **scrcpy** (Android mirroring and recording
 ## 🚀 How to Use
 
 ### 1. For Users (The Installer)
-- Download and run **`Scrcpy GUI Setup 1.0.0.exe`** from the `dist/` folder.
-- Follow the setup and find "Scrcpy GUI" in your **Start Menu**.
+- Go to the **[Releases](https://github.com/Arlo-23/scrcpy/releases)** section of this repository.
+- Download the latest **`Scrcpy GUI Setup 1.0.0.exe`**.
+- Run the installer and find "Scrcpy GUI" in your **Start Menu**.
 - *Note: If Windows shows a warning, click "More Info" -> "Run Anyway". It is 100% free.*
 
 ### 2. For Developers (The Shortcut)
