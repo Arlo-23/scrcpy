@@ -2,13 +2,13 @@
 
 A beautiful, premium GUI wrapper for **scrcpy** (Android mirroring and recording).
 
-![App Interface](assets/screenshot_connection.png)
+![App Interface](assets/images/icon.png)
 
 ## 📸 Interface Showcase
 
 | Device Connection | Audio Settings | Mirroring in Action |
 | :---: | :---: | :---: |
-| ![Connection](assets/screenshot_connection.png) | ![Audio](assets/screenshot_audio.png) | ![Mirroring](assets/screenshot_mirroring.png) |
+| ![Connection](assets/images/Screenshot%202026-02-27%20124003.png) | ![Audio](assets/images/Screenshot%202026-02-27%20124256.png) | ![Mirroring](assets/images/Screenshot%202026-02-27%20124526.png) |
 
 ## ⚖️ Legal and Credits
 
