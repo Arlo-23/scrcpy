@@ -24,16 +24,18 @@ A beautiful, premium GUI wrapper for **scrcpy** (Android mirroring and recording
 
 ## 🚀 How to Use
 
-1. **Download**: Download the latest release (`.exe` or portable version).
-2. **Android Setup**: Enable **USB Debugging** on your phone (usually in Developer Options).
-3. **Connect**: Plug your phone into your PC via USB.
-4. **Launch**: Open the application and click **Launch scrcpy**.
+### 1. For Users (The Installer)
+- Download and run **`Scrcpy GUI Setup 1.0.0.exe`** from the `dist/` folder.
+- Follow the setup and find "Scrcpy GUI" in your **Start Menu**.
+- *Note: If Windows shows a warning, click "More Info" -> "Run Anyway". It is 100% free.*
 
-## 🛠️ Requirements
+### 2. For Developers (The Shortcut)
+- Double-click **`Launch.bat`** in the project root to start the app instantly.
 
-- **No Windows command-line required.**
-- **No Node.js installation required** for the end-user.
-- Everything needed (ADB and scrcpy binaries) is bundled inside the app.
+### 3. Requirements
+1. **Android Setup**: Enable **USB Debugging** on your phone (usually in Developer Options).
+2. **Connect**: Plug your phone into your PC via USB.
+3. **Launch**: Open the application and click **Launch scrcpy**.
 
 ---
 
