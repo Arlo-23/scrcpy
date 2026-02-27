@@ -2,7 +2,8 @@
 
 A beautiful, premium GUI wrapper for **scrcpy** (Android mirroring and recording).
 
-![App Interface](assets/images/icon.png)
+<img src="assets/images/icon.png" width="200" height="200" alt="App Interface">
+
 
 ## 📸 Interface Showcase
 
