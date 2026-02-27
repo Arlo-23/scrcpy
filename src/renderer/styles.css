@@ -244,6 +244,34 @@ body::before {
     padding-left: 8px;
 }
 
+.titlebar-github {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+    -webkit-app-region: no-drag;
+    text-decoration: none;
+    margin-right: 4px;
+}
+
+.titlebar-github:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.titlebar-github svg {
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+}
+
+.titlebar-github:hover svg {
+    opacity: 1;
+}
+
 #status-text {
     font-size: 12px;
     color: var(--text-secondary);
