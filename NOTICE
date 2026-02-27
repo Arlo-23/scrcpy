@@ -1,11 +1,15 @@
-scrcpy GUI
-Copyright (c) 2024 [Your Name/Github Username]
+SCRCPY GUI WRAPPER - INSTALLATION COMPONENTS
+==========================================
 
-This product includes software developed by Genymobile SAS.
-https://github.com/Genymobile/scrcpy
+This installer will set up the following onto your computer:
 
-scrcpy is licensed under the Apache License, Version 2.0.
-A copy of the License is included in the LICENSE file.
+1.  Scrcpy GUI (The visual application)
+2.  ADB (Android Debug Bridge) - Used to talk to your phone.
+3.  scrcpy binaries - The core mirroring engine by Genymobile.
+4.  Desktop & Start Menu shortcuts.
 
-The scrcpy binaries (scrcpy.exe, scrcpy-server, and associated DLLs) are provided
-by Genymobile SAS and are used in accordance with their license.
+SAFE & FREE:
+All components are bundled locally. No system settings are changed except for the shortcuts and the installation folder.
+
+CLEAN REMOVAL:
+You can uninstall this application at any time via 'Add or Remove Programs' in Windows.
