@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --enable-logging",
-    "build": "electron-builder"
+    "build": "set CSC_SKIP_SIGNING=true && set ELECTRON_BUILDER_CACHE=%LOCALAPPDATA%\\electron-builder\\Cache && electron-builder"
   },
   "build": {
     "appId": "com.scrcpy.gui",
