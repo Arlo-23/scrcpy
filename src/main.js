@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const { spawn, exec } = require('child_process');
 const fs = require('fs');
@@ -33,6 +33,12 @@ function createWindow() {
     });
 
     mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+    // Open links in default browser
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+        return { action: 'deny' };
+    });
 
     mainWindow.on('closed', () => {
         if (scrcpyProcess) scrcpyProcess.kill();
