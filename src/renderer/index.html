@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scrcpy GUI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+    <!-- ── Toast Container ──────────────────────────────────────────────────────── -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- ── macOS-style Titlebar ─────────────────────────────────────────────────── -->
+    <header class="titlebar" id="titlebar">
+
+        <!-- Traffic light buttons + app name (left, no-drag zone) -->
+        <div class="titlebar-left">
+            <div class="titlebar-controls">
+                <button class="wc-btn wc-close" id="btn-close" title="Close" aria-label="Close"></button>
+                <button class="wc-btn wc-minimize" id="btn-minimize" title="Minimize" aria-label="Minimize"></button>
+                <button class="wc-btn wc-maximize" id="btn-maximize" title="Zoom" aria-label="Zoom"></button>
+            </div>
+        </div>
+
+        <!-- Centered app name (drag zone) -->
+        <div class="titlebar-center-name">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="7" y="2" width="10" height="18" rx="2" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="12" cy="18" r="1" fill="currentColor" />
+                <rect x="9" y="4" width="6" height="1" rx="0.5" fill="currentColor" />
+                <path d="M2 10h3M19 10h3M2 14h3M19 14h3" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" />
+            </svg>
+            scrcpy GUI
+        </div>
+
+        <!-- Device status (right) -->
+        <div class="titlebar-status">
+            <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+            <span id="status-text">No Device</span>
+            <span class="latency-badge" id="latency-badge" style="display:none" aria-label="Latency"></span>
+        </div>
+    </header>
+
+    <!-- ── App Shell ─────────────────────────────────────────────────────────────── -->
+    <div class="app-shell">
+
+        <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Settings navigation">
+
+            <span class="sidebar-section-label">Mirror</span>
+
+            <button class="nav-item active" data-tab="connection" aria-selected="true">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M12 2v3M12 19v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </span>
+                Connection
+            </button>
+
+            <span class="sidebar-section-label">Display</span>
+
+            <button class="nav-item" data-tab="video">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="4" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M17 8.5l5-2v7l-5-2V8.5z" stroke="currentColor" stroke-width="1.5"
+                            stroke-linejoin="round" />
+                        <path d="M2 19h15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </span>
+                Video
+            </button>
+
+            <button class="nav-item" data-tab="audio">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.5"
+                            stroke-linejoin="round" />
+                        <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </span>
+                Audio
+            </button>
+
+            <button class="nav-item" data-tab="window">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M3 8.5h18M8.5 8.5v12" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" />
+                    </svg>
+                </span>
+                Window
+            </button>
+
+            <span class="sidebar-section-label">Input</span>
+
+            <button class="nav-item" data-tab="control">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="8" width="20" height="12" rx="3" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="8" cy="14" r="1.5" fill="currentColor" />
+                        <circle cx="16" cy="14" r="1.5" fill="currentColor" />
+                        <path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </span>
+                Control
+            </button>
+
+            <span class="sidebar-section-label">Output</span>
+
+            <button class="nav-item" data-tab="recording">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="12" cy="12" r="3.5" fill="currentColor" />
+                    </svg>
+                </span>
+                Recording
+            </button>
+
+            <button class="nav-item" data-tab="advanced">
+                <span class="nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+                            stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                </span>
+                Advanced
+            </button>
+
+            <div class="sidebar-footer">
+                <button class="btn-reset" id="btn-reset-settings" title="Reset all settings">
+                    <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                        <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M3 3v5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Reset to Defaults
+                </button>
+                <div class="legal-attribution">
+                    <p>Powered by <a href="https://github.com/Genymobile/scrcpy" target="_blank">scrcpy</a></p>
+                    <p>© Genymobile SAS</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── Main Content ──────────────────────────────────────────────────────── -->
+        <main class="main-content" role="main">
+
+            <!-- ══ TAB: Connection ═══════════════════════════════════════════════════ -->
+            <section class="tab-pane active" id="tab-connection" aria-label="Connection settings">
+                <div class="pane-header">
+                    <h2>Connection</h2>
+                    <p>Select your Android device and configure USB or wireless connection.</p>
+                </div>
+
+                <!-- Device List -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill blue" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            Connected Devices
+                        </span>
+                        <div class="card-actions">
+                            <button class="btn-ghost btn-sm" id="btn-refresh-devices" aria-label="Refresh device list">
+                                <svg viewBox="0 0 24 24" fill="none" width="13" height="13">
+                                    <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="device-list" id="device-list" role="list">
+                        <div class="device-empty" aria-live="polite">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                    stroke="currentColor" stroke-width="1.5" />
+                            </svg>
+                            <p>No devices detected</p>
+                            <small>Connect via USB or use Wireless below</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wireless Connect -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill cyan" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M1.42 9a16 16 0 0121.16 0M5 12.55a11 11 0 0114.08 0M10.71 17.4l1.29 1.6 1.29-1.6a3 3 0 00-2.58 0z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            Wireless (TCP/IP)
+                        </span>
+                        <label class="toggle" aria-label="Enable wireless mode">
+                            <input type="checkbox" id="opt-tcpip" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="wifi-form" id="wifi-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wifi-ip">Device IP Address</label>
+                                <input type="text" id="wifi-ip" placeholder="192.168.1.100" class="input"
+                                    autocomplete="off" />
+                            </div>
+                            <div class="form-group form-group-sm">
+                                <label for="wifi-port">Port</label>
+                                <input type="number" id="wifi-port" value="5555" min="1" max="65535" class="input" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <button class="btn-primary" id="btn-wifi-connect">
+                                <svg viewBox="0 0 24 24" fill="none" width="13" height="13">
+                                    <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Connect
+                            </button>
+                            <button class="btn-danger" id="btn-wifi-disconnect">
+                                <svg viewBox="0 0 24 24" fill="none" width="13" height="13">
+                                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                                Disconnect
+                            </button>
+                        </div>
+                        <div class="info-box">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                            <span>First run <code>adb tcpip 5555</code> over USB, then connect wirelessly.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Overrides -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill gray" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            Device Overrides
+                        </span>
+                    </div>
+                    <label class="setting-row">
+                        <span class="setting-label">
+                            <span class="icon-pill gray" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="2" y="7" width="20" height="10" rx="2" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                                </svg>
+                            </span>
+                            <span class="setting-label-text">
+                                Device Serial
+                                <small>--serial override</small>
+                            </span>
+                        </span>
+                        <input type="text" id="opt-serial" placeholder="auto-detect" class="input input-sm"
+                            autocomplete="off" />
+                    </label>
+                    <label class="setting-row">
+                        <span class="setting-label">
+                            <span class="icon-pill gray" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <path d="M9 7h6M9 11h4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            <span class="setting-label-text">
+                                Display ID
+                                <small>--display (0 = main)</small>
+                            </span>
+                        </span>
+                        <input type="number" id="opt-display-id" value="0" min="0" max="99" class="input input-sm" />
+                    </label>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Video ════════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-video" aria-label="Video settings">
+                <div class="pane-header">
+                    <h2>Video</h2>
+                    <p>Resolution, bitrate, frame rate, and encoding.</p>
+                </div>
+
+                <div class="bento-grid">
+                    <!-- Resolution Tile -->
+                    <div class="card bento-2">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill purple">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor"
+                                            stroke-width="1.5" />
+                                    </svg>
+                                </span>
+                                Resolution
+                            </span>
+                        </div>
+                        <div class="preset-display">
+                            <span class="preset-value-big" id="display-max-size">1080</span>
+                            <span class="preset-value-unit">px</span>
+                        </div>
+                        <div class="preset-group" data-target="opt-max-size">
+                            <button class="preset-btn" data-value="480">480p</button>
+                            <button class="preset-btn" data-value="720">720p</button>
+                            <button class="preset-btn active" data-value="1080">1080p</button>
+                            <button class="preset-btn" data-value="1440">2K</button>
+                            <button class="preset-btn" data-value="2160">4K</button>
+                            <button class="preset-btn" data-value="custom">Custom</button>
+                        </div>
+                        <div class="preset-custom-row" id="custom-max-size-row">
+                            <label>Value:</label>
+                            <input type="number" id="opt-max-size" value="1080" class="input" />
+                        </div>
+                    </div>
+
+                    <!-- FPS Tile -->
+                    <div class="card bento-1">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill purple">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                FPS
+                            </span>
+                        </div>
+                        <div class="preset-display">
+                            <span class="preset-value-big" id="display-max-fps">60</span>
+                            <span class="preset-value-unit">fps</span>
+                        </div>
+                        <div class="preset-group" data-target="opt-max-fps">
+                            <button class="preset-btn" data-value="30">30</button>
+                            <button class="preset-btn active" data-value="60">60</button>
+                            <button class="preset-btn" data-value="90">90</button>
+                            <button class="preset-btn" data-value="120">120</button>
+                            <button class="preset-btn" data-value="custom">Opt</button>
+                        </div>
+                        <div class="preset-custom-row" id="custom-max-fps-row">
+                            <input type="number" id="opt-max-fps" value="60" class="input" />
+                        </div>
+                    </div>
+
+                    <!-- Bitrate Tile -->
+                    <div class="card bento-2">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill purple">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                Video Bitrate
+                            </span>
+                        </div>
+                        <div class="preset-display">
+                            <span class="preset-value-big" id="display-bit-rate">8</span>
+                            <span class="preset-value-unit">Mbps</span>
+                        </div>
+                        <div class="preset-group" data-target="opt-bit-rate">
+                            <button class="preset-btn" data-value="4">4M</button>
+                            <button class="preset-btn active" data-value="8">8M</button>
+                            <button class="preset-btn" data-value="16">16M</button>
+                            <button class="preset-btn" data-value="32">32M</button>
+                            <button class="preset-btn" data-value="50">50M</button>
+                            <button class="preset-btn" data-value="custom">Custom</button>
+                        </div>
+                        <div class="preset-custom-row" id="custom-bit-rate-row">
+                            <label>Value:</label>
+                            <input type="number" id="opt-bit-rate" value="8" class="input" />
+                        </div>
+                    </div>
+
+                    <!-- Codec Tile -->
+                    <div class="card bento-1">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill purple">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
+                                            stroke="currentColor" stroke-width="1.5" />
+                                    </svg>
+                                </span>
+                                Codec
+                            </span>
+                        </div>
+                        <div style="padding: 16px 18px;">
+                            <select id="opt-video-codec" class="select">
+                                <option value="">Default (H.264)</option>
+                                <option value="h264">H.264</option>
+                                <option value="h265">H.265 / HEVC</option>
+                                <option value="av1">AV1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 12px;">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill purple" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            Additional Encoding
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="opt-render-driver">Render Driver</label>
+                            <select id="opt-render-driver" class="select">
+                                <option value="">Default</option>
+                                <option value="direct3d">Direct3D</option>
+                                <option value="opengl">OpenGL</option>
+                                <option value="opengles2">OpenGL ES 2</option>
+                                <option value="software">Software</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-lock-orientation">Lock Orientation</label>
+                            <select id="opt-lock-orientation" class="select">
+                                <option value="">Unlocked</option>
+                                <option value="0">0° — Natural</option>
+                                <option value="1">90° Counter-clockwise</option>
+                                <option value="2">180°</option>
+                                <option value="3">90° Clockwise</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="opt-codec-options">Codec Options</label>
+                            <input type="text" id="opt-codec-options" placeholder="key:type=value,..." class="input" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Audio ════════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-audio" aria-label="Audio settings">
+                <div class="pane-header">
+                    <h2>Audio</h2>
+                    <p>Configure audio forwarding and quality.</p>
+                </div>
+
+                <div class="bento-grid">
+                    <!-- Audio Bitrate Tile -->
+                    <div class="card bento-2">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill green">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="1.5" />
+                                    </svg>
+                                </span>
+                                Audio Bitrate
+                            </span>
+                            <label class="toggle">
+                                <input type="checkbox" id="opt-audio-enable" checked />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div id="audio-fields">
+                            <div class="preset-display">
+                                <span class="preset-value-big" id="display-audio-bit-rate">128</span>
+                                <span class="preset-value-unit">Kbps</span>
+                            </div>
+                            <div class="preset-group" data-target="opt-audio-bit-rate">
+                                <button class="preset-btn" data-value="64">64K</button>
+                                <button class="preset-btn" data-value="96">96K</button>
+                                <button class="preset-btn active" data-value="128">128K</button>
+                                <button class="preset-btn" data-value="192">192K</button>
+                                <button class="preset-btn" data-value="320">320K</button>
+                                <button class="preset-btn" data-value="custom">Custom</button>
+                            </div>
+                            <div class="preset-custom-row" id="custom-audio-bit-rate-row">
+                                <label>Value:</label>
+                                <input type="number" id="opt-audio-bit-rate" value="128" class="input" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audio Codec Tile -->
+                    <div class="card bento-1">
+                        <div class="card-header">
+                            <span class="card-title">
+                                <span class="icon-pill green">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 18V5l12-2v13M9 15c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V5"
+                                            stroke="currentColor" stroke-width="1.5" />
+                                    </svg>
+                                </span>
+                                Codec
+                            </span>
+                        </div>
+                        <div style="padding: 16px 18px;">
+                            <select id="opt-audio-codec" class="select">
+                                <option value="">Default (Opus)</option>
+                                <option value="opus">Opus</option>
+                                <option value="aac">AAC</option>
+                                <option value="flac">FLAC</option>
+                                <option value="raw">Raw PCM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 12px;">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill gray">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                </svg>
+                            </span>
+                            Audio Latency & Source
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="opt-audio-buffer">Audio Buffer (ms)</label>
+                            <input type="number" id="opt-audio-buffer" value="0" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-audio-source">Audio Source</label>
+                            <select id="opt-audio-source" class="select">
+                                <option value="">Default</option>
+                                <option value="output">System Output</option>
+                                <option value="mic">Microphone</option>
+                                <option value="playback">Playback</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Window ═══════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-window" aria-label="Window settings">
+                <div class="pane-header">
+                    <h2>Window</h2>
+                    <p>Control how the mirror window appears on your screen.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill orange" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <path d="M3 8.5h18M8.5 8.5v12" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            Window Style
+                        </span>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-fullscreen" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Start Fullscreen <small>-f</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-always-on-top" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Always on Top <small>--always-on-top</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-borderless" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Borderless <small>--window-borderless</small></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill orange" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M5 3H3a2 2 0 00-2 2v14a2 2 0 002 2h2M19 3h2a2 2 0 012 2v14a2 2 0 01-2 2h-2"
+                                        stroke="currentColor" stroke-width="1.5" />
+                                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="1.5" />
+                                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="1.5" />
+                                </svg>
+                            </span>
+                            Size &amp; Position
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column:1/-1">
+                            <label for="opt-window-title">Window Title</label>
+                            <input type="text" id="opt-window-title" placeholder="scrcpy" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-window-width">Width (0 = auto)</label>
+                            <input type="number" id="opt-window-width" value="0" min="0" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-window-height">Height (0 = auto)</label>
+                            <input type="number" id="opt-window-height" value="0" min="0" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-window-x">X Position</label>
+                            <input type="number" id="opt-window-x" placeholder="auto" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-window-y">Y Position</label>
+                            <input type="number" id="opt-window-y" placeholder="auto" class="input" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Control ══════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-control" aria-label="Control settings">
+                <div class="pane-header">
+                    <h2>Control</h2>
+                    <p>Input mode, touch simulation, and device interaction behavior.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill cyan" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="2" y="8" width="20" height="12" rx="3" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <circle cx="8" cy="14" r="1.5" fill="currentColor" />
+                                    <circle cx="16" cy="14" r="1.5" fill="currentColor" />
+                                    <path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            Input &amp; Interaction
+                        </span>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-no-control" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Mirror Only <small>--no-control</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-show-touches" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Show Touches <small>--show-touches</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-stay-awake" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Stay Awake <small>--stay-awake</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-turn-screen-off" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Screen Off on Start <small>--turn-screen-off</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-forward-all-clicks" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Forward All Clicks <small>--forward-all-clicks</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-prefer-text" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Prefer Text Input <small>--prefer-text</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-hid-keyboard" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">HID Keyboard <small>--hid-keyboard</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-hid-mouse" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">HID Mouse <small>--hid-mouse</small></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill cyan" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor"
+                                        stroke-width="1.5" />
+                                    <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            Shortcut Modifier
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column:1/-1">
+                            <label for="opt-shortcut-mod">Modifier Key</label>
+                            <select id="opt-shortcut-mod" class="select">
+                                <option value="">Default (Left Alt + Left Super)</option>
+                                <option value="lalt">Left Alt</option>
+                                <option value="ralt">Right Alt</option>
+                                <option value="lctrl">Left Ctrl</option>
+                                <option value="rctrl">Right Ctrl</option>
+                                <option value="lsuper">Left Super (Win key)</option>
+                                <option value="rsuper">Right Super (Win key)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Recording ════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-recording" aria-label="Recording settings">
+                <div class="pane-header">
+                    <h2>Recording</h2>
+                    <p>Record your device screen to a video file while mirroring.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill red" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="4" fill="currentColor" />
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
+                                </svg>
+                            </span>
+                            Record Screen
+                        </span>
+                        <label class="toggle" aria-label="Enable recording">
+                            <input type="checkbox" id="opt-record-enable" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div id="record-fields">
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column:1/-1">
+                                <label for="opt-record-file">Output File</label>
+                                <div class="file-input-wrap">
+                                    <input type="text" id="opt-record-file" placeholder="C:\Users\…\recording.mp4"
+                                        class="input" readonly />
+                                    <button class="btn-ghost" id="btn-pick-file" aria-label="Browse for output file">
+                                        <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+                                            <path
+                                                d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"
+                                                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                                        </svg>
+                                        Choose…
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="opt-record-format">Format</label>
+                                <select id="opt-record-format" class="select">
+                                    <option value="mp4">MP4</option>
+                                    <option value="mkv">MKV</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="checkbox-grid" style="padding-bottom:14px">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="opt-no-display" />
+                                <span class="checkmark"></span>
+                                <span class="cb-label">Record Only, No Display <small>--no-display</small></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ TAB: Advanced ═════════════════════════════════════════════════════ -->
+            <section class="tab-pane" id="tab-advanced" aria-label="Advanced settings">
+                <div class="pane-header">
+                    <h2>Advanced</h2>
+                    <p>Tunneling, logging, ADB forwarding, and system options.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill blue" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            Network &amp; Tunnel
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="opt-tunnel-host">Tunnel Host</label>
+                            <input type="text" id="opt-tunnel-host" placeholder="localhost" class="input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-tunnel-port">Tunnel Port</label>
+                            <input type="number" id="opt-tunnel-port" placeholder="0 (auto)" class="input" />
+                        </div>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-force-adb-forward" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Force ADB Forward <small>--force-adb-forward</small></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            <span class="icon-pill gray" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                                        stroke="currentColor" stroke-width="1.5" />
+                                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            Logging &amp; System
+                        </span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="opt-log-level">Log Level</label>
+                            <select id="opt-log-level" class="select">
+                                <option value="">Default (Info)</option>
+                                <option value="verbose">Verbose</option>
+                                <option value="debug">Debug</option>
+                                <option value="info">Info</option>
+                                <option value="warn">Warn</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="opt-push-target">Push Target Path</label>
+                            <input type="text" id="opt-push-target" placeholder="/sdcard/Download/" class="input" />
+                        </div>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-disable-screensaver" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">Disable Screensaver <small>--disable-screensaver</small></span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="opt-no-legacy-clipboard" />
+                            <span class="checkmark"></span>
+                            <span class="cb-label">No Legacy Clipboard <small>--no-legacy-clipboard</small></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ── Bottom Bar ─────────────────────────────────────────────────────────────── -->
+    <footer class="bottom-bar" role="toolbar" aria-label="Command bar">
+        <div class="command-preview" id="command-preview-wrap" title="Generated command">
+            <span class="cmd-label" aria-label="Command">CMD</span>
+            <span id="command-preview" class="cmd-text" aria-live="polite">scrcpy</span>
+            <button class="btn-ghost btn-icon" id="btn-copy-cmd" title="Copy command"
+                aria-label="Copy command to clipboard">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor"
+                        stroke-width="1.5" />
+                </svg>
+            </button>
+        </div>
+        <div class="bottom-actions">
+            <button class="btn-ghost btn-icon" id="btn-toggle-log" title="Show / hide log"
+                aria-label="Toggle log panel">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+            <button class="btn-stop hidden" id="btn-stop" aria-label="Stop scrcpy">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+                </svg>
+                Stop
+            </button>
+            <button class="btn-launch" id="btn-launch" aria-label="Launch scrcpy">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <polygon points="5,3 19,12 5,21" fill="currentColor" />
+                </svg>
+                Launch scrcpy
+            </button>
+        </div>
+    </footer>
+
+    <!-- ── Log Drawer ─────────────────────────────────────────────────────────────── -->
+    <div class="log-drawer" id="log-drawer" role="log" aria-label="Log output" aria-live="polite">
+        <div class="log-header">
+            <span>Log Output</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+                <button class="btn-ghost btn-sm" id="btn-clear-log" aria-label="Clear log">Clear</button>
+                <button class="btn-ghost btn-icon" id="btn-close-log" aria-label="Close log">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="log-body" id="log-body"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

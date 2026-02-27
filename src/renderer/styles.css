@@ -1,0 +1,1806 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   scrcpy GUI — Apple macOS / Liquid Glass Design System
+   Inspired by Apple HIG for macOS · One unified theme
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Google Fonts (SF Pro substitute) ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Design Tokens — Apple macOS ─────────────────────────────────────────────── */
+:root {
+    /* Wallpaper-tinted background (light clean appearance like macOS Light Mode) */
+    --bg-wallpaper: #f5f5f7;
+    --bg-glass: rgba(255, 255, 255, 0.72);
+    --bg-glass-strong: rgba(255, 255, 255, 0.88);
+    --bg-glass-light: rgba(0, 0, 0, 0.045);
+    --bg-input: rgba(0, 0, 0, 0.05);
+    --bg-hover: rgba(0, 0, 0, 0.06);
+    --bg-active: rgba(0, 0, 0, 0.10);
+    --bg-selected: rgba(10, 132, 255, 0.15);
+
+    /* Apple system colors */
+    --apple-blue: #007aff;
+    --apple-blue-light: rgba(0, 122, 255, 0.15);
+    --apple-blue-hover: #005bb5;
+    --apple-green: #34c759;
+    --apple-yellow: #ffcc00;
+    --apple-orange: #ff9500;
+    --apple-red: #ff3b30;
+    --apple-purple: #af52de;
+    --apple-cyan: #32ade6;
+    --apple-pink: #ff2d55;
+
+    /* Text — Apple vibrancy tiers (Dark text for light theme) */
+    --text-primary: rgba(0, 0, 0, 0.88);
+    /* Near black like #1d1d1f */
+    --text-secondary: rgba(0, 0, 0, 0.55);
+    --text-tertiary: rgba(0, 0, 0, 0.30);
+    --text-quaternary: rgba(0, 0, 0, 0.18);
+
+    /* Borders — frosted glass separators */
+    --border: rgba(0, 0, 0, 0.10);
+    --border-strong: rgba(0, 0, 0, 0.18);
+    --border-focus: var(--apple-blue);
+
+    /* Glass blur */
+    --blur-sm: blur(12px);
+    --blur-md: blur(24px);
+    --blur-lg: blur(48px);
+
+    /* Radii — Apple uses consistent generous rounding */
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-xxl: 28px;
+
+    /* Shadows — softer, diffused for light mode */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-blue: 0 4px 24px rgba(0, 122, 255, 0.35);
+
+    /* Layout */
+    --titlebar-h: 38px;
+    --sidebar-w: 210px;
+    --bottombar-h: 60px;
+    --log-h: 210px;
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Typography */
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+}
+
+/* ── Reset & Base ────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-wallpaper);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animated wallpaper gradient for light mode */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 15% 10%, rgba(0, 122, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 80%, rgba(175, 82, 222, 0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(52, 199, 89, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Scrollbar — macOS thin style ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Custom Titlebar — macOS traffic lights style ────────────────────────────── */
+.titlebar {
+    display: flex;
+    align-items: center;
+    height: var(--titlebar-h);
+    background: var(--bg-glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-bottom: 1px solid var(--border);
+    -webkit-app-region: drag;
+    user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 0 16px;
+}
+
+.titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    -webkit-app-region: no-drag;
+    flex-shrink: 0;
+    width: var(--sidebar-w);
+}
+
+/* macOS traffic light buttons */
+.titlebar-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.wc-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    transition: filter var(--transition-fast), transform var(--transition-fast);
+    position: relative;
+}
+
+.wc-btn:hover {
+    filter: brightness(1.15);
+    transform: scale(1.1);
+}
+
+.wc-btn:hover::after {
+    font-size: 8px;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.wc-close {
+    background: #ff5f57;
+}
+
+.wc-minimize {
+    background: #febc2e;
+}
+
+.wc-maximize {
+    background: #28c840;
+}
+
+.wc-close:hover::after {
+    content: '✕';
+}
+
+.wc-minimize:hover::after {
+    content: '−';
+}
+
+.wc-maximize:hover::after {
+    content: '+';
+}
+
+/* App name in center */
+.titlebar-center-name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
+    pointer-events: none;
+}
+
+.titlebar-center-name svg {
+    width: 15px;
+    height: 15px;
+    color: var(--apple-blue);
+    opacity: 0.9;
+}
+
+/* Status area — right side */
+.titlebar-status {
+    flex-shrink: 0;
+    width: var(--sidebar-w);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-left: 8px;
+}
+
+#status-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-quaternary);
+    flex-shrink: 0;
+    transition: background var(--transition), box-shadow var(--transition);
+}
+
+.status-dot.connected {
+    background: var(--apple-green);
+    box-shadow: 0 0 6px var(--apple-green);
+    animation: pulse-dot 2.5s ease infinite;
+}
+
+.status-dot.running {
+    background: var(--apple-blue);
+    box-shadow: 0 0 8px var(--apple-blue);
+    animation: pulse-dot 1.4s ease infinite;
+}
+
+.status-dot.error {
+    background: var(--apple-red);
+    box-shadow: 0 0 6px var(--apple-red);
+}
+
+@keyframes pulse-dot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
+
+.latency-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+}
+
+.latency-badge.good {
+    background: rgba(48, 209, 88, 0.12);
+    border-color: rgba(48, 209, 88, 0.25);
+    color: var(--apple-green);
+}
+
+.latency-badge.medium {
+    background: rgba(255, 214, 10, 0.12);
+    border-color: rgba(255, 214, 10, 0.25);
+    color: var(--apple-yellow);
+}
+
+.latency-badge.poor {
+    background: rgba(255, 69, 58, 0.12);
+    border-color: rgba(255, 69, 58, 0.25);
+    color: var(--apple-red);
+}
+
+/* ── App Shell ────────────────────────────────────────────────────────────────── */
+.app-shell {
+    display: flex;
+    height: calc(100vh - var(--titlebar-h) - var(--bottombar-h));
+    margin-top: var(--titlebar-h);
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Sidebar — Apple translucent sidebar ─────────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--bg-glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 8px 12px;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 12px 4px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font);
+    transition: all var(--transition-fast);
+    text-align: left;
+    width: 100%;
+    position: relative;
+}
+
+.nav-item .nav-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.nav-item .nav-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* Icon color per category */
+.nav-item[data-tab="connection"] .nav-icon {
+    background: rgba(10, 132, 255, 0.18);
+    color: var(--apple-blue);
+}
+
+.nav-item[data-tab="video"] .nav-icon {
+    background: rgba(191, 90, 242, 0.18);
+    color: var(--apple-purple);
+}
+
+.nav-item[data-tab="audio"] .nav-icon {
+    background: rgba(48, 209, 88, 0.18);
+    color: var(--apple-green);
+}
+
+.nav-item[data-tab="window"] .nav-icon {
+    background: rgba(255, 159, 10, 0.18);
+    color: var(--apple-orange);
+}
+
+.nav-item[data-tab="control"] .nav-icon {
+    background: rgba(90, 200, 250, 0.18);
+    color: var(--apple-cyan);
+}
+
+.nav-item[data-tab="recording"] .nav-icon {
+    background: rgba(255, 69, 58, 0.18);
+    color: var(--apple-red);
+}
+
+.nav-item[data-tab="advanced"] .nav-icon {
+    background: rgba(255, 255, 255, 0.09);
+    color: var(--text-secondary);
+}
+
+.nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background: var(--bg-selected);
+    color: var(--apple-blue);
+    font-weight: 600;
+    /* Bolder type on selection for light theme */
+}
+
+.nav-item.active .nav-icon {
+    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.4);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.btn-reset {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font);
+    transition: all var(--transition-fast);
+}
+
+.btn-reset svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.btn-reset:hover {
+    background: rgba(255, 69, 58, 0.1);
+    color: var(--apple-red);
+}
+
+/* ── Main Content ─────────────────────────────────────────────────────────────── */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Tab Panes ────────────────────────────────────────────────────────────────── */
+.tab-pane {
+    display: none;
+    animation: macFadeIn 0.2s ease;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+@keyframes macFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.pane-header {
+    margin-bottom: 22px;
+}
+
+.pane-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.pane-header p {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* ── Liquid Glass Card ────────────────────────────────────────────────────────── */
+.card {
+    background: var(--bg-glass);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* Inner highlight — Apple glass top edge shimmer (subtle dark line for light theme) */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.05) 30%,
+            rgba(0, 0, 0, 0.08) 50%,
+            rgba(0, 0, 0, 0.05) 70%,
+            transparent 100%);
+    pointer-events: none;
+}
+
+.card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.card-title .icon-pill {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-title .icon-pill svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* color variants */
+.icon-pill.blue {
+    background: rgba(10, 132, 255, 0.18);
+    color: var(--apple-blue);
+}
+
+.icon-pill.purple {
+    background: rgba(191, 90, 242, 0.18);
+    color: var(--apple-purple);
+}
+
+.icon-pill.green {
+    background: rgba(48, 209, 88, 0.18);
+    color: var(--apple-green);
+}
+
+.icon-pill.orange {
+    background: rgba(255, 159, 10, 0.18);
+    color: var(--apple-orange);
+}
+
+.icon-pill.cyan {
+    background: rgba(90, 200, 250, 0.18);
+    color: var(--apple-cyan);
+}
+
+.icon-pill.red {
+    background: rgba(255, 69, 58, 0.18);
+    color: var(--apple-red);
+}
+
+.icon-pill.gray {
+    background: rgba(255, 255, 255, 0.09);
+    color: var(--text-secondary);
+}
+
+.icon-pill.pink {
+    background: rgba(255, 55, 95, 0.18);
+    color: var(--apple-pink);
+}
+
+.card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* ── Form Elements ────────────────────────────────────────────────────────────── */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 16px 18px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    padding: 0 18px 16px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group-sm {
+    flex: 0 0 90px;
+}
+
+.form-group:not(.form-group-sm) {
+    flex: 1;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+/* Apple-style input */
+.input,
+.select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    transition: all var(--transition-fast);
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.input:hover,
+.select:hover {
+    background: var(--bg-hover);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.input:focus,
+.select:focus {
+    background: var(--bg-glass-strong);
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--apple-blue-light), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.input::placeholder {
+    color: var(--text-quaternary);
+}
+
+.input-sm {
+    width: 100px;
+}
+
+.select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(0,0,0,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.form-group option {
+    background: #ffffff;
+    color: #1d1d1f;
+}
+
+/* ── Setting Row ──────────────────────────────────────────────────────────────── */
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    gap: 16px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.setting-row:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+}
+
+.setting-row:hover {
+    background: var(--bg-hover);
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.setting-label .icon-pill {
+    flex-shrink: 0;
+}
+
+.setting-label small {
+    display: block;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    margin-top: 1px;
+}
+
+.setting-label-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+/* ── Slider — Apple-style ────────────────────────────────────────────────────── */
+.slider-group {
+    padding: 6px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.slider-row label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    width: 130px;
+    flex-shrink: 0;
+}
+
+.slider-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 99px;
+    background: linear-gradient(to right,
+            var(--apple-blue) 0%,
+            var(--apple-blue) var(--pct, 0%),
+            rgba(255, 255, 255, 0.12) var(--pct, 0%),
+            rgba(255, 255, 255, 0.12) 100%);
+    outline: none;
+    cursor: pointer;
+    transition: height var(--transition-fast);
+}
+
+.slider:hover {
+    height: 5px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(10, 132, 255, 0.0);
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.slider::-webkit-slider-thumb:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(10, 132, 255, 0.25);
+    transform: scale(1.08);
+}
+
+.slider:active::-webkit-slider-thumb {
+    transform: scale(0.95);
+}
+
+.slider-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--apple-blue);
+    min-width: 72px;
+    text-align: right;
+}
+
+/* ── Toggle — Apple iOS/macOS style ──────────────────────────────────────────── */
+.toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* ── macOS Toggle Switch ─────────────────────────────────────────────────────── */
+.toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.15);
+    /* Light gray for off state */
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* Soft inner shadow */
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform var(--transition-spring), box-shadow var(--transition);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.1);
+    /* Slightly stronger drop shadow on the knob for contrast */
+}
+
+input:checked+.toggle-switch {
+    background: var(--apple-green);
+    border-color: var(--apple-green);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+input:checked+.toggle-switch::after {
+    transform: translateX(16px);
+    box-shadow: -1px 2px 5px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+input:focus-visible+.toggle-switch {
+    box-shadow: 0 0 0 3px var(--apple-blue-light);
+}
+
+/* ── Checkbox — Apple HIG ─────────────────────────────────────────────────────── */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    padding: 10px 14px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.checkbox-item:hover {
+    background: var(--bg-hover);
+}
+
+.checkbox-item input {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    /* Darker border for light theme */
+    flex-shrink: 0;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.checkbox-item input:checked~.checkmark {
+    background: var(--apple-blue);
+    border-color: var(--apple-blue);
+    box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
+}
+
+.checkbox-item input:checked~.checkmark::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 8px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+}
+
+.cb-label {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.cb-label small {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+}
+
+/* ── Toggle-wrap ──────────────────────────────────────────────────────────────── */
+.toggle-wrap {
+    display: flex;
+    align-items: center;
+}
+
+/* ── WiFi Form ────────────────────────────────────────────────────────────────── */
+.wifi-form {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Device List ──────────────────────────────────────────────────────────────── */
+.device-list {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 80px;
+}
+
+.device-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    color: var(--text-tertiary);
+    text-align: center;
+}
+
+.device-empty svg {
+    width: 32px;
+    height: 32px;
+    opacity: 0.3;
+}
+
+.device-empty p {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.device-empty small {
+    font-size: 11px;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    background: rgba(0, 0, 0, 0.02);
+    /* Slight gray inset for light theme */
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.device-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+}
+
+.device-item.selected {
+    border-color: var(--apple-blue);
+    background: var(--bg-selected);
+}
+
+.device-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.device-serial {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.device-state {
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.device-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid transparent;
+}
+
+.device-badge.authorized {
+    background: rgba(48, 209, 88, 0.12);
+    color: var(--apple-green);
+    border-color: rgba(48, 209, 88, 0.25);
+}
+
+.device-badge.unauthorized {
+    background: rgba(255, 214, 10, 0.12);
+    color: var(--apple-yellow);
+    border-color: rgba(255, 214, 10, 0.25);
+}
+
+.device-badge.offline {
+    background: rgba(255, 69, 58, 0.1);
+    color: var(--apple-red);
+    border-color: rgba(255, 69, 58, 0.2);
+}
+
+/* ── Info Box ─────────────────────────────────────────────────────────────────── */
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(0, 122, 255, 0.06);
+    border: 1px solid rgba(0, 122, 255, 0.15);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.info-box svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--apple-blue);
+    margin-top: 1px;
+}
+
+.info-box code {
+    font-family: var(--font-mono);
+    color: var(--apple-cyan);
+    font-size: 11px;
+}
+
+/* ── File Input ───────────────────────────────────────────────────────────────── */
+.file-input-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.file-input-wrap .input {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: default;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────────── */
+.btn-primary,
+.btn-danger,
+.btn-ghost,
+.btn-launch,
+.btn-stop {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.btn-primary {
+    background: var(--apple-blue);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--apple-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-blue);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+.btn-danger {
+    background: rgba(255, 69, 58, 0.1);
+    color: var(--apple-red);
+    border-color: rgba(255, 69, 58, 0.25);
+}
+
+.btn-danger:hover {
+    background: rgba(255, 69, 58, 0.2);
+}
+
+.btn-ghost {
+    background: var(--bg-glass-light);
+    color: var(--text-secondary);
+    border-color: var(--border);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+}
+
+.btn-ghost:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn-icon {
+    padding: 5px;
+    width: 28px;
+    height: 28px;
+    justify-content: center;
+}
+
+.btn-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Big launch button */
+.btn-launch {
+    background: var(--apple-blue);
+    color: #fff;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 16px rgba(10, 132, 255, 0.4);
+    letter-spacing: -0.01em;
+}
+
+.btn-launch:hover {
+    background: var(--apple-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(10, 132, 255, 0.5);
+}
+
+.btn-launch:active {
+    transform: scale(0.97);
+}
+
+.btn-launch svg {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-stop {
+    background: rgba(255, 69, 58, 0.12);
+    color: var(--apple-red);
+    border-color: rgba(255, 69, 58, 0.3);
+    padding: 10px 20px;
+    font-size: 13px;
+    border-radius: var(--radius-lg);
+}
+
+.btn-stop:hover {
+    background: rgba(255, 69, 58, 0.22);
+}
+
+.btn-stop svg {
+    width: 14px;
+    height: 14px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ── Bottom Bar — frosted glass ───────────────────────────────────────────────── */
+.bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--bottombar-h);
+    background: var(--bg-glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    gap: 14px;
+    z-index: 100;
+}
+
+.command-preview {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: 1;
+    background: rgba(0, 0, 0, 0.03);
+    /* Lighter inset for command preview */
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 12px;
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+}
+
+.command-preview:hover {
+    border-color: var(--border-strong);
+}
+
+.cmd-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--apple-blue);
+    background: rgba(10, 132, 255, 0.15);
+    padding: 2px 7px;
+    border-radius: var(--radius-xs);
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+}
+
+.cmd-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.bottom-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* ── Log Drawer ───────────────────────────────────────────────────────────────── */
+.log-drawer {
+    position: fixed;
+    bottom: var(--bottombar-h);
+    left: 0;
+    right: 0;
+    height: var(--log-h);
+    background: rgba(255, 255, 255, 0.95);
+    /* Light glass for logs */
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+}
+
+.log-drawer.open {
+    transform: translateY(0);
+}
+
+.log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.log-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.log-line {
+    display: flex;
+    gap: 12px;
+}
+
+.log-line.stdout {
+    color: rgba(0, 0, 0, 0.65);
+    /* Darker gray for standard out in light mode */
+}
+
+.log-line.stderr {
+    color: var(--apple-yellow);
+}
+
+.log-line.error {
+    color: var(--apple-red);
+}
+
+.log-line.info {
+    color: var(--apple-cyan);
+}
+
+.log-time {
+    color: var(--text-quaternary);
+    flex-shrink: 0;
+}
+
+/* ── Toast — Apple Notification style ────────────────────────────────────────── */
+#toast-container {
+    position: fixed;
+    top: calc(var(--titlebar-h) + 14px);
+    right: 18px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: all;
+    min-width: 300px;
+    max-width: 380px;
+    background: rgba(255, 255, 255, 0.92);
+    /* White glass toasts */
+    backdrop-filter: var(--blur-lg);
+    -webkit-backdrop-filter: var(--blur-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: toastIn var(--transition-spring) both;
+}
+
+.toast.dismissing {
+    animation: toastOut 0.22s ease forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(40px) scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(40px) scale(0.88);
+    }
+}
+
+.toast-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 14px;
+}
+
+.toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toast-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.toast.success .toast-icon {
+    background: rgba(48, 209, 88, 0.18);
+    color: var(--apple-green);
+}
+
+.toast.warning .toast-icon {
+    background: rgba(255, 214, 10, 0.18);
+    color: var(--apple-yellow);
+}
+
+.toast.error .toast-icon {
+    background: rgba(255, 69, 58, 0.18);
+    color: var(--apple-red);
+}
+
+.toast.info .toast-icon {
+    background: rgba(10, 132, 255, 0.18);
+    color: var(--apple-blue);
+}
+
+.toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+}
+
+.toast-msg {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: -1px;
+    transition: color var(--transition-fast);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.toast-close:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.toast-progress {
+    height: 2px;
+    border-radius: 0 0 1px 1px;
+    animation: shrink var(--duration, 4s) linear forwards;
+}
+
+.toast.success .toast-progress {
+    background: var(--apple-green);
+}
+
+.toast.warning .toast-progress {
+    background: var(--apple-yellow);
+}
+
+.toast.error .toast-progress {
+    background: var(--apple-red);
+}
+
+.toast.info .toast-progress {
+    background: var(--apple-blue);
+}
+
+@keyframes shrink {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────────── */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinning svg {
+    animation: spin 0.7s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BENTO GRID SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+
+/* Bento grid container — replaces stacked cards */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+/* Individual bento tiles inherit .card styles — no margin-bottom */
+.bento-grid .card {
+    margin-bottom: 0;
+}
+
+/* Width spans */
+.bento-1 {
+    grid-column: span 1;
+}
+
+.bento-2 {
+    grid-column: span 2;
+}
+
+.bento-3 {
+    grid-column: span 3;
+}
+
+/* Height variants */
+.bento-tall {
+    align-self: stretch;
+}
+
+/* Two-column bento (for simpler layouts) */
+.bento-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.bento-grid-2 .card {
+    margin-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRESET / SEGMENTED CONTROL
+   ═══════════════════════════════════════════════════════════ */
+
+/* Pill-segment group */
+.preset-group {
+    display: flex;
+    gap: 4px;
+    padding: 14px 16px 4px;
+    flex-wrap: wrap;
+}
+
+.preset-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.preset-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+.preset-btn.active {
+    background: var(--apple-blue);
+    border-color: var(--apple-blue);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(10, 132, 255, 0.4);
+}
+
+/* The big resolution/label displayed above the presets */
+.preset-display {
+    padding: 16px 16px 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.preset-value-big {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.preset-value-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+/* Custom input row (shown when "Custom" is active) */
+.preset-custom-row {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px 14px;
+    animation: macFadeIn 0.18s ease;
+}
+
+.preset-custom-row.visible {
+    display: flex;
+}
+
+.preset-custom-row label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+}
+
+.preset-custom-row .input {
+    max-width: 120px;
+    flex: 0 0 auto;
+}
+
+/* ── Bento tile: stat card (single KPI) ──────────────────── */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+}
+
+.stat-card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.stat-card-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-left: 2px;
+}
+
+/* Slider inside bento tile (no outer padding — tile already has it) */
+.bento-slider-wrap {
+    padding: 0 16px 16px;
+}
+
+.bento-slider-wrap .slider-row {
+    gap: 10px;
+}
+
+.bento-slider-wrap .slider-row label {
+    font-size: 11px;
+    width: auto;
+    min-width: 0;
+}
+
+/* ── Legal Attribution ───────────────────────────────────────────────────────── */
+.legal-attribution {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+}
+
+.legal-attribution p {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin: 0;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
+.legal-attribution a {
+    color: var(--apple-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition-fast);
+}
+
+.legal-attribution a:hover {
+    color: var(--apple-blue-hover, #0071e3);
+    text-decoration: underline;
+}
